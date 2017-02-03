@@ -1,0 +1,24 @@
+Simulation = "DebianUpdateOneClient"
+Servers = 4
+Bf = 2
+Rounds = 20
+CloseWait = 6000
+Height = 10
+Base = 4
+RunWait = 3600
+Hosts = 4
+Delay = 50
+Snapshots = "Debian-jessie-updates"
+
+NumberOfInstalledPackages, NumberOfPackagesInRepo
+100000, 1
+100000, 10
+100000, 100
+100000, 1000
+100000, 10000
+100000, 100000
+1, 100000
+10, 100000
+100, 100000
+1000, 100000
+10000, 100000

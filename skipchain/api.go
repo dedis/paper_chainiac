@@ -98,11 +98,11 @@ func (c *Client) LinkParentChildBlock(parent, child *SkipBlock) (*SkipBlock, *Sk
 		return nil, nil, errors.New("Child doesn't point to that parent")
 	}
 	host := parent.Roster.RandomServerIdentity()
-	replyMsg, err := c.Send(host, &SetChildrenSkipBlock{parent.Hash, child.Hash})
-	if err != nil {
-		return nil, nil, err
+	reply := &SetChildrenSkipBlockReply{}
+	cerr := c.SendProtobuf(host, &SetChildrenSkipBlock{parent.Hash, child.Hash}, reply)
+	if cerr != nil {
+		return nil, nil, cerr
 	}
-	reply := replyMsg.Msg.(SetChildrenSkipBlockReply)
 	return reply.Parent, reply.Child, nil
 }
 
@@ -110,12 +110,8 @@ func (c *Client) LinkParentChildBlock(parent, child *SkipBlock) (*SkipBlock, *Sk
 // the most current SkipBlock of the chain.
 func (c *Client) GetUpdateChain(parent *SkipBlock, latest SkipBlockID) (reply *GetUpdateChainReply, err error) {
 	h := parent.Roster.RandomServerIdentity()
-	r, err := c.Send(h, &GetUpdateChain{latest})
-	if err != nil {
-		return
-	}
-	replyVal := r.Msg.(GetUpdateChainReply)
-	reply = &replyVal
+	reply = &GetUpdateChainReply{}
+	err = c.SendProtobuf(h, &GetUpdateChain{latest}, reply)
 	return
 }
 
@@ -151,11 +147,7 @@ func (c *Client) proposeSkipBlock(latest *SkipBlock, el *onet.Roster, d network.
 		propose.Data = b
 	}
 	host := activeRoster.RandomServerIdentity()
-	r, err := c.Send(host, &ProposeSkipBlock{hash, propose})
-	if err != nil {
-		return
-	}
-	replyVal := r.Msg.(ProposedSkipBlockReply)
-	reply = &replyVal
+	reply = &ProposedSkipBlockReply{}
+	err = c.SendProtobuf(host, &ProposeSkipBlock{hash, propose}, reply)
 	return
 }

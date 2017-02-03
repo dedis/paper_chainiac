@@ -1,0 +1,13 @@
+Simulation = "DebianUpdateCreate"
+Servers = 4
+Bf = 2
+Rounds = 10
+CloseWait = 6000
+Height = 10
+Base = 4
+RunWait = 3600
+Hosts = 4
+Delay = 50
+
+Snapshots
+"stable-update"

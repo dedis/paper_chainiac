@@ -1,0 +1,13 @@
+Simulation = "DebianUpdateOneClient"
+Servers = 4
+Bf = 2
+Rounds = 10
+CloseWait = 6000
+Height = 10
+Base = 4
+RunWait = 3600
+Hosts = 4
+Delay = 50
+
+Packages, PackagesLatestHash, Snapshots
+"vim golang", "790f9760b098c444ce42393a11ff463210e8488b1d775240a5c1a564bd569388 ee0f6ead2b1bb3f7b500afb51e5f57d51b39bde33ec2ffaa990d3aefb7ce69fe", "stable-small"

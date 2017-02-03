@@ -4,15 +4,14 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"encoding/binary"
-	"errors"
 	"sort"
 	"sync"
 	"time"
 
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/manage"
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/skipchain"
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/swupdate"
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/timestamp"
+	"github.com/dedis/paper_17_usenixsec_chainiac/manage"
+	"github.com/dedis/paper_17_usenixsec_chainiac/skipchain"
+	"github.com/dedis/paper_17_usenixsec_chainiac/swupdate/protocol"
+	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
 	"github.com/satori/go.uuid"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/log"
@@ -56,10 +55,9 @@ type storage struct {
 	TSInterval time.Duration
 }
 
-func NewDebianUpdate(context *onet.Context, path string) onet.Service {
+func NewDebianUpdate(context *onet.Context) onet.Service {
 	service := &DebianUpdate{
 		ServiceProcessor: onet.NewServiceProcessor(context),
-		path:             path,
 		skipchain:        skipchain.NewClient(),
 		Storage: &storage{
 			RepositoryChainGenesis: map[string]*RepositoryChain{},
@@ -82,8 +80,7 @@ func NewDebianUpdate(context *onet.Context, path string) onet.Service {
 	return service
 }
 
-func (service *DebianUpdate) CreateRepository(si *network.ServerIdentity,
-	cr *CreateRepository) (network.Message, error) {
+func (service *DebianUpdate) CreateRepository(cr *CreateRepository) (network.Message, onet.ClientError) {
 	repo := cr.Release.Repository
 	log.Lvlf3("%s Creating repository %s version %s", service,
 		repo.GetName(), repo.Version)
@@ -98,7 +95,7 @@ func (service *DebianUpdate) CreateRepository(si *network.ServerIdentity,
 		service.Storage.Root, err = service.skipchain.CreateRoster(cr.Roster,
 			cr.Base, cr.Height, skipchain.VerifyNone, nil)
 		if err != nil {
-			return nil, err
+			return nil, onet.NewClientError(err)
 		}
 		repoChain.Root = service.Storage.Root
 	}
@@ -108,11 +105,11 @@ func (service *DebianUpdate) CreateRepository(si *network.ServerIdentity,
 		repoChain.Root, cr.Base, cr.Height, verifierID, cr.Release)
 	if err != nil {
 		log.Lvl2("error while adding the data in the skipchain")
-		return nil, err
+		return nil, onet.NewClientError(err)
 	}
 	service.Storage.RepositoryChainGenesis[repo.GetName()] = repoChain
 	if err := service.startPropagate(repo.GetName(), repoChain); err != nil {
-		return nil, err
+		return nil, onet.NewClientError(err)
 	}
 	service.timestamp(time.Now())
 
@@ -284,8 +281,7 @@ func (service *DebianUpdate) getOrderedRepositoryNames() []string {
 	return keys
 }
 
-func (service *DebianUpdate) UpdateRepository(si *network.ServerIdentity,
-	ur *UpdateRepository) (network.Message, error) {
+func (service *DebianUpdate) UpdateRepository(ur *UpdateRepository) (network.Message, onet.ClientError) {
 	//addBlock := monitor.NewTimeMeasure("add_block")
 	//defer addBlock.Record()
 
@@ -304,13 +300,13 @@ func (service *DebianUpdate) UpdateRepository(si *network.ServerIdentity,
 		ret, err := service.skipchain.ProposeData(ur.RepositoryChain.Root,
 			ur.RepositoryChain.Data, release)
 		if err != nil {
-			return nil, err
+			return nil, onet.NewClientError(err)
 		}
 		repoChain.Data = ret.Latest
 
 		if err := service.startPropagate(release.Repository.GetName(),
 			repoChain); err != nil {
-			return nil, err
+			return nil, onet.NewClientError(err)
 		}
 	} else {
 		log.Lvl1("The latest existing skipblock is the same," +
@@ -392,20 +388,18 @@ func verifierFunc(msg, data []byte) bool {
 	return true
 }
 
-func (service *DebianUpdate) RepositorySC(si *network.ServerIdentity,
-	rsc *RepositorySC) (network.Message, error) {
+func (service *DebianUpdate) RepositorySC(rsc *RepositorySC) (network.Message, onet.ClientError) {
 
 	repoChain, ok := service.Storage.RepositoryChain[rsc.repositoryName]
 
 	if !ok {
-		return nil, errors.New("Does not exist.")
+		return nil, onet.NewClientErrorCode(4200, "Does not exist.")
 	}
 
-	latestBlockRet, err := service.LatestBlock(nil,
-		&LatestBlock{repoChain.Data.Hash})
+	latestBlockRet, err := service.LatestBlock(&LatestBlock{repoChain.Data.Hash})
 
 	if err != nil {
-		return nil, err
+		return nil, onet.NewClientError(err)
 	}
 
 	update := latestBlockRet.(*LatestBlockRet).Update
@@ -415,43 +409,40 @@ func (service *DebianUpdate) RepositorySC(si *network.ServerIdentity,
 	}, nil
 }
 
-func (service *DebianUpdate) LatestBlock(si *network.ServerIdentity,
-	lb *LatestBlock) (network.Message, error) {
+func (service *DebianUpdate) LatestBlock(lb *LatestBlock) (network.Message, onet.ClientError) {
 
 	if service.Storage.Timestamp == nil {
-		return nil, errors.New("Timestamp-service missing!")
+		return nil, onet.NewClientErrorCode(4200, "Timestamp-service missing!")
 	}
 
 	gucRet, err := service.skipchain.GetUpdateChain(service.Storage.Root,
 		lb.LastKnownSB)
 
 	if err != nil {
-		return nil, err
+		return nil, onet.NewClientError(err)
 	}
 
 	return &LatestBlockRet{service.Storage.Timestamp, gucRet.Update}, nil
 }
 
-func (service *DebianUpdate) LatestBlockFromName(si *network.ServerIdentity,
-	lbr *LatestBlockRepo) (network.Message, error) {
+func (service *DebianUpdate) LatestBlockFromName(lbr *LatestBlockRepo) (network.Message, onet.ClientError) {
 	repoName := lbr.RepoName
 
 	chain := service.Storage.RepositoryChain[repoName]
 	if chain == nil {
-		return nil, errors.New("skipchain not found for " + repoName)
+		return nil, onet.NewClientErrorCode(4200, "skipchain not found for "+repoName)
 	}
-	return service.LatestBlock(nil, &LatestBlock{chain.Data.Hash})
+	return service.LatestBlock(&LatestBlock{chain.Data.Hash})
 }
 
-func (service *DebianUpdate) LatestBlocks(si *network.ServerIdentity,
-	lbs *LatestBlocks) (network.Message, error) {
+func (service *DebianUpdate) LatestBlocks(lbs *LatestBlocks) (network.Message, onet.ClientError) {
 	var updates []*skipchain.SkipBlock
 	var lengths []int64
 	var t *Timestamp
 	for _, id := range lbs.LastKnownSBs {
-		b, err := service.LatestBlock(nil, &LatestBlock{id})
+		b, err := service.LatestBlock(&LatestBlock{id})
 		if err != nil {
-			return nil, err
+			return nil, onet.NewClientError(err)
 		}
 		lb := b.(*LatestBlockRet)
 		if len(lb.Update) > 1 {

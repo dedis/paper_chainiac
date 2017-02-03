@@ -1,4 +1,4 @@
-package debianupdate
+package main
 
 import (
 	"os"
@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/dedis/cothority/services/timestamp"
-	"github.com/dedis/simul/monitor"
+	"github.com/dedis/paper_17_usenixsec_chainiac"
+	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
 	"gopkg.in/dedis/onet.v1"
-	"gopkg.in/dedis/onet.v1/crypto"
 	"gopkg.in/dedis/onet.v1/log"
+	"gopkg.in/dedis/onet.v1/simul/monitor"
 )
 
 func init() {
@@ -64,9 +64,9 @@ func (e *createSimulation) Run(config *onet.SimulationConfig) error {
 	log.Lvl2("Size is:", size, "rounds:", e.Rounds)
 
 	// check if the service is running and get an handle to it
-	service, ok := config.GetService(ServiceName).(*DebianUpdate)
+	service, ok := config.GetService(debianupdate.ServiceName).(*debianupdate.DebianUpdate)
 	if service == nil || !ok {
-		log.Fatal("Didn't find service", ServiceName)
+		log.Fatal("Didn't find service", debianupdate.ServiceName)
 	}
 
 	// create and setup a new timestamp client
@@ -95,34 +95,34 @@ func (e *createSimulation) Run(config *onet.SimulationConfig) error {
 	sort.Sort(release_files)
 
 	// Map a repo name to a skipchain
-	repos := make(map[string]*RepositoryChain)
+	repos := make(map[string]*debianupdate.RepositoryChain)
 	// Map a repo name to a release (which is the repo + the signed root + proof)
-	releases := make(map[string]*Release)
+	releases := make(map[string]*debianupdate.Release)
 
 	log.Lvl2("Loading repository files")
 	for i, release_file := range release_files {
 		log.Lvl1("Parsing repo file", release_file)
 
 		// Create a new repository structure (not a new skipchain..!)
-		repo, err := NewRepository(release_file, snapshot_files[i],
+		repo, err := debianupdate.NewRepository(release_file, snapshot_files[i],
 			"https://snapshots.debian.org", e.Snapshots, e.NumberOfPackagesInRepo)
 		log.ErrFatal(err)
 		log.Lvl1("Repository created with", len(repo.Packages), "packages")
 
 		// Recover all the hashes from the repo
-		hashes := make([]crypto.HashID, len(repo.Packages))
+		hashes := make([]timestamp.HashID, len(repo.Packages))
 		for i, p := range repo.Packages {
-			hashes[i] = crypto.HashID(p.Hash)
+			hashes[i] = timestamp.HashID(p.Hash)
 		}
 
 		// Compute the root and the proofs
-		root, proofs := crypto.ProofTree(HashFunc(), hashes)
+		root, proofs := timestamp.ProofTree(debianupdate.HashFunc(), hashes)
 		lengths := []int64{}
 		for _, proof := range proofs {
-			lengths = append(lengths, int64(len(proof)))
+			lengths = append(lengths, int64(len(proof.Proof)))
 		}
 		// Store the repo, root and proofs in a release
-		release := &Release{repo, root, proofs, lengths}
+		release := &debianupdate.Release{repo, root, proofs, lengths}
 
 		// check if the skipchain has already been created for this repo
 		sc, knownRepo := repos[repo.GetName()]
@@ -138,15 +138,15 @@ func (e *createSimulation) Run(config *onet.SimulationConfig) error {
 			// who should take care of that ? the client or the server ?
 			// I would say the server, when it receive a new release
 			// it should check that it's different than the actual release
-			urr, err := service.UpdateRepository(nil,
-				&UpdateRepository{sc, release})
+			urr, err := service.UpdateRepository(
+				&debianupdate.UpdateRepository{sc, release})
 
 			if err != nil {
 				log.Lvl1(err)
 			} else {
 
 				// update the references to the latest block and release
-				repos[repo.GetName()] = urr.(*UpdateRepositoryRet).RepositoryChain
+				repos[repo.GetName()] = urr.(*debianupdate.UpdateRepositoryRet).RepositoryChain
 				releases[repo.GetName()] = release
 			}
 		} else {
@@ -154,14 +154,14 @@ func (e *createSimulation) Run(config *onet.SimulationConfig) error {
 
 			log.Lvl2("Creating a new skipchain for", repo.GetName())
 
-			cr, err := service.CreateRepository(nil,
-				&CreateRepository{config.Roster, release, e.Base, e.Height})
+			cr, err := service.CreateRepository(
+				&debianupdate.CreateRepository{config.Roster, release, e.Base, e.Height})
 			if err != nil {
 				return err
 			}
 
 			// update the references to the latest block and release
-			repos[repo.GetName()] = cr.(*CreateRepositoryRet).RepositoryChain
+			repos[repo.GetName()] = cr.(*debianupdate.CreateRepositoryRet).RepositoryChain
 			releases[repo.GetName()] = release
 		}
 		round.Record()

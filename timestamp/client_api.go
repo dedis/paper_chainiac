@@ -1,8 +1,6 @@
 package timestamp
 
 import (
-	"errors"
-
 	"time"
 
 	"gopkg.in/dedis/onet.v1"
@@ -27,15 +25,12 @@ func (c *Client) SignMsg(root *network.ServerIdentity, msg []byte) (*SignatureRe
 		Message: msg,
 	}
 	log.Lvl4("Sending message [", string(msg), "] to", root)
-	reply, err := c.Send(root, serviceReq)
-	if e := onet.ErrMsg(reply, err); e != nil {
-		return nil, e
+	sr := &SignatureResponse{}
+	err := c.SendProtobuf(root, serviceReq, sr)
+	if err != nil {
+		return nil, err
 	}
-	sr, ok := reply.Msg.(SignatureResponse)
-	if !ok {
-		return nil, errors.New("This is odd: couldn't cast reply.")
-	}
-	return &sr, nil
+	return sr, nil
 }
 
 // SetupStamper initializes the root node with the desired configuration
@@ -51,14 +46,19 @@ func (c *Client) SetupStamper(roster *onet.Roster, epochDuration time.Duration,
 	}
 	root := roster.List[0]
 	log.Lvl4("Sending message to:", root)
-	reply, err := c.Send(root, serviceReq)
-	if e := onet.ErrMsg(reply, err); e != nil {
-		return nil, e
-	}
-	sr, ok := reply.Msg.(SetupRosterResponse)
-	if !ok {
-		return nil, errors.New("This is odd: couldn't cast reply.")
+	sr := &SetupRosterResponse{}
+	err := c.SendProtobuf(root, serviceReq, sr)
+	if err != nil {
+		return nil, err
 	}
 	log.Lvl4("Initialized timestamp with roster id:", sr.ID)
-	return &sr, nil
+	return sr, nil
+}
+
+// Hack for paper
+func (c *Client) Rx() uint64 {
+	return 0
+}
+func (c *Client) Tx() uint64 {
+	return 0
 }

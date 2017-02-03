@@ -11,14 +11,14 @@ done
 
 find . -name "*go" | xargs perl -pi -e s:github.com/dedis/onet:gopkg.in/dedis/onet.v1:
 
-for oldnew in sda\.:onet. network\.Body:network.Message \
-	onet\.ProtocolRegisterName:onet.GlobalProtocolRegister \
-	network\.RegisterHandler:network.RegisterMessage \
-	ServerIdentity\.Addresses:ServerIdentity.Address \
+for oldnew in sda\\.:onet. network\\.Body:network.Message \
+	onet\\.ProtocolRegisterName:onet.GlobalProtocolRegister \
+	network\\.RegisterHandler:network.RegisterMessage \
+	ServerIdentity\\.Addresses:ServerIdentity.Address \
 	CreateProtocolService:CreateProtocol \
 	CreateProtocolSDA:CreateProtocol \
     RegisterPacketType:RegisterMessage \
-    network\.Packet:network.Envelope sda\.Conode:onet.Server \
+    network\\.Packet:network.Envelope sda\\.Conode:onet.Server \
     UnmarshalRegistered:Unmarshal MarshalRegisteredType:Marshal ; do
     	echo replacing $oldnew
         find . -name "*go" | xargs -n 1 perl -pi -e s:$oldnew:g

@@ -12,7 +12,7 @@ import (
 
 	"bytes"
 
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/swupdate"
+	"github.com/dedis/paper_17_usenixsec_chainiac/swupdate/protocol"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/log"
 	"gopkg.in/dedis/onet.v1/network"
@@ -20,6 +20,15 @@ import (
 
 // ServiceName can be used to refer to the name of the timestamp service
 const ServiceName = "Timestamp"
+
+func init() {
+	onet.RegisterNewService(ServiceName, newTimestampService)
+	timestampSID = onet.ServiceFactory.ServiceID(ServiceName)
+	network.RegisterMessage(&SignatureRequest{})
+	network.RegisterMessage(&SignatureResponse{})
+	network.RegisterMessage(&SetupRosterRequest{})
+	network.RegisterMessage(&SetupRosterResponse{})
+}
 
 var timestampSID onet.ServiceID
 
@@ -30,15 +39,6 @@ var dummyVerfier = func(rootAndTimestamp []byte) bool {
 		log.Error("Got some invalid timestamp.")
 	}
 	return true
-}
-
-func init() {
-	onet.RegisterNewService(ServiceName, newTimestampService)
-	timestampSID = onet.ServiceFactory.ServiceID(ServiceName)
-	network.RegisterMessage(&SignatureRequest{})
-	network.RegisterMessage(&SignatureResponse{})
-	network.RegisterMessage(&SetupRosterRequest{})
-	network.RegisterMessage(&SetupRosterResponse{})
 }
 
 // Service handles client requests. It implements
@@ -109,7 +109,7 @@ type SignatureResponse struct {
 }
 
 // SignatureRequest treats external request to this service.
-func (s *Service) SignatureRequest(si *network.ServerIdentity, req *SignatureRequest) (network.Message, error) {
+func (s *Service) SignatureRequest(req *SignatureRequest) (network.Message, onet.ClientError) {
 
 	// on every request:
 	// 1) If has the length of hashed nonce, add it to the local buffer of
@@ -131,7 +131,7 @@ func (s *Service) SignatureRequest(si *network.ServerIdentity, req *SignatureReq
 
 // SetupCoSiRoster handles `SetupRosterRequest`s requests
 // XXX later we'll give it an ID instead of the actual roster?
-func (s *Service) SetupCoSiRoster(si *network.ServerIdentity, setup *SetupRosterRequest) (network.Message, error) {
+func (s *Service) SetupCoSiRoster(setup *SetupRosterRequest) (network.Message, onet.ClientError) {
 	if s.roster == nil && s.EpochDuration == 0 {
 		s.roster = setup.Roster
 		s.EpochDuration = setup.EpochDuration
@@ -228,11 +228,10 @@ func bytesToTimestamp(b []byte) (int64, error) {
 	return t, nil
 }
 
-func newTimestampService(c *onet.Context, path string) onet.Service {
+func newTimestampService(c *onet.Context) onet.Service {
 	log.Lvl4("New Service created!")
 	s := &Service{
 		ServiceProcessor: onet.NewServiceProcessor(c),
-		path:             path,
 		requests:         requestPool{},
 		// EpochDuration must be initialized by sending a setup req.
 	}

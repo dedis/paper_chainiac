@@ -9,7 +9,7 @@ import (
 
 	"github.com/dedis/crypto/abstract"
 	"github.com/dedis/crypto/cosi"
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/bftcosi"
+	"github.com/dedis/paper_17_usenixsec_chainiac/bftcosi"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/crypto"
 	"gopkg.in/dedis/onet.v1/log"

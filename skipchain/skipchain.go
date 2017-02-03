@@ -12,13 +12,8 @@ import (
 
 	"time"
 
-	"io/ioutil"
-	"os"
-
-	"fmt"
-
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/bftcosi"
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/manage"
+	"github.com/dedis/paper_17_usenixsec_chainiac/bftcosi"
+	"github.com/dedis/paper_17_usenixsec_chainiac/manage"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/log"
 	"gopkg.in/dedis/onet.v1/network"
@@ -37,6 +32,8 @@ func init() {
 	})
 	network.RegisterMessage(&SkipBlockMap{})
 }
+
+const skipblocksID = "skipblocks"
 
 var skipchainSID onet.ServiceID
 
@@ -63,7 +60,7 @@ type SkipBlockMap struct {
 // If the the latest block given is nil it verify if we are actually creating
 // the first (genesis) block and creates it. If it is called with nil although
 // there already exist previous blocks, it will return an error.
-func (s *Service) ProposeSkipBlock(si *network.ServerIdentity, psbd *ProposeSkipBlock) (network.Message, error) {
+func (s *Service) ProposeSkipBlock(psbd *ProposeSkipBlock) (network.Message, onet.ClientError) {
 	prop := psbd.Proposed
 	var prev *SkipBlock
 
@@ -72,7 +69,7 @@ func (s *Service) ProposeSkipBlock(si *network.ServerIdentity, psbd *ProposeSkip
 		var ok bool
 		prev, ok = s.getSkipBlockByID(psbd.LatestID)
 		if !ok {
-			return nil, errors.New("Didn't find latest block")
+			return nil, onet.NewClientErrorCode(4200, "Didn't find latest block")
 		}
 		prop.MaximumHeight = prev.MaximumHeight
 		prop.BaseHeight = prev.BaseHeight
@@ -95,7 +92,7 @@ func (s *Service) ProposeSkipBlock(si *network.ServerIdentity, psbd *ProposeSkip
 				var ok bool
 				pointer, ok = s.getSkipBlockByID(pointer.BackLinkIds[0])
 				if !ok {
-					return nil, errors.New("Didn't find convenient SkipBlock for height " +
+					return nil, onet.NewClientErrorCode(4200, "Didn't find convenient SkipBlock for height "+
 						strconv.Itoa(h))
 				}
 			}
@@ -106,10 +103,10 @@ func (s *Service) ProposeSkipBlock(si *network.ServerIdentity, psbd *ProposeSkip
 		// are correctly set up
 		prop.Index = 0
 		if prop.MaximumHeight == 0 {
-			return nil, errors.New("Set a maximumHeight > 0")
+			return nil, onet.NewClientErrorCode(4200, "Set a maximumHeight > 0")
 		}
 		if prop.BaseHeight == 0 {
-			return nil, errors.New("Set a baseHeight > 0")
+			return nil, onet.NewClientErrorCode(4200, "Set a baseHeight > 0")
 		}
 		prop.Height = prop.MaximumHeight
 		prop.ForwardLink = make([]*BlockLink, 0)
@@ -123,7 +120,7 @@ func (s *Service) ProposeSkipBlock(si *network.ServerIdentity, psbd *ProposeSkip
 	}
 	el, err := prop.GetResponsible(s)
 	if err != nil {
-		return nil, err
+		return nil, onet.NewClientError(err)
 	}
 	prop.AggregateResp = el.Aggregate
 
@@ -131,7 +128,7 @@ func (s *Service) ProposeSkipBlock(si *network.ServerIdentity, psbd *ProposeSkip
 
 	prev, prop, err = s.signNewSkipBlock(prev, prop)
 	if err != nil {
-		return nil, errors.New("Verification error: " + err.Error())
+		return nil, onet.NewClientErrorCode(4200, "Verification error: "+err.Error())
 	}
 	//s.save()
 
@@ -146,10 +143,10 @@ func (s *Service) ProposeSkipBlock(si *network.ServerIdentity, psbd *ProposeSkip
 // skipchain from the latest block the caller knows of to the actual latest
 // SkipBlock.
 // Somehow comparable to search in SkipLists.
-func (s *Service) GetUpdateChain(si *network.ServerIdentity, latestKnown *GetUpdateChain) (network.Message, error) {
+func (s *Service) GetUpdateChain(latestKnown *GetUpdateChain) (network.Message, onet.ClientError) {
 	block, ok := s.getSkipBlockByID(latestKnown.LatestID)
 	if !ok {
-		return nil, errors.New("Couldn't find latest skipblock")
+		return nil, onet.NewClientErrorCode(4200, "Couldn't find latest skipblock")
 	}
 	// at least the latest know and the next block:
 	blocks := []*SkipBlock{block}
@@ -158,7 +155,7 @@ func (s *Service) GetUpdateChain(si *network.ServerIdentity, latestKnown *GetUpd
 		link := block.ForwardLink[len(block.ForwardLink)-1]
 		block, ok = s.getSkipBlockByID(link.Hash)
 		if !ok {
-			return nil, errors.New("Missing block in forward-chain")
+			return nil, onet.NewClientErrorCode(4200, "Missing block in forward-chain")
 		}
 		blocks = append(blocks, block)
 	}
@@ -170,16 +167,16 @@ func (s *Service) GetUpdateChain(si *network.ServerIdentity, latestKnown *GetUpd
 
 // SetChildrenSkipBlock creates a new SkipChain if that 'service' doesn't exist
 // yet.
-func (s *Service) SetChildrenSkipBlock(si *network.ServerIdentity, scsb *SetChildrenSkipBlock) (network.Message, error) {
+func (s *Service) SetChildrenSkipBlock(scsb *SetChildrenSkipBlock) (network.Message, onet.ClientError) {
 	parentID := scsb.ParentID
 	childID := scsb.ChildID
 	parent, ok := s.getSkipBlockByID(parentID)
 	if !ok {
-		return nil, errors.New("Couldn't find skipblock!")
+		return nil, onet.NewClientErrorCode(4200, "Couldn't find skipblock!")
 	}
 	child, ok := s.getSkipBlockByID(childID)
 	if !ok {
-		return nil, errors.New("Couldn't find skipblock!")
+		return nil, onet.NewClientErrorCode(4200, "Couldn't find skipblock!")
 	}
 	child.ParentBlockID = parentID
 	parent.ChildSL = NewBlockLink()
@@ -187,7 +184,7 @@ func (s *Service) SetChildrenSkipBlock(si *network.ServerIdentity, scsb *SetChil
 
 	err := s.startPropagation([]*SkipBlock{child, parent})
 	if err != nil {
-		return nil, err
+		return nil, onet.NewClientError(err)
 	}
 	// Parent-block is always of type roster, but child-block can be
 	// data or roster.
@@ -489,50 +486,41 @@ func (s *Service) lenSkipBlocks() int {
 // saves the actual identity
 func (s *Service) save() {
 	log.Lvl3("Saving service")
-	b, err := network.Marshal(s.SkipBlockMap)
+	err := s.Save(skipblocksID, s.SkipBlockMap)
 	if err != nil {
-		log.Error("Couldn't marshal service:", err)
-	} else {
-		err = ioutil.WriteFile(s.path+"/skipchain.bin", b, 0660)
-		if err != nil {
-			log.Error("Couldn't save file:", err)
-		}
+		log.Error("Couldn't save file:", err)
 	}
 }
 
 // Tries to load the configuration and updates the data in the service
 // if it finds a valid config-file.
 func (s *Service) tryLoad() error {
-	configFile := s.path + "/skipchain.bin"
-	b, err := ioutil.ReadFile(configFile)
-	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("Error while reading %s: %s", configFile, err)
+	if !s.DataAvailable(skipblocksID) {
+		return nil
 	}
-	if len(b) > 0 {
-		_, msg, err := network.Unmarshal(b)
-		if err != nil {
-			return fmt.Errorf("Couldn't unmarshal: %s", err)
-		}
-		log.Lvl3("Successfully loaded")
-		s.SkipBlockMap = msg.(*SkipBlockMap)
+	msg, err := s.Load(skipblocksID)
+	if err != nil {
+		return err
+	}
+	var ok bool
+	s.SkipBlockMap, ok = msg.(*SkipBlockMap)
+	if !ok {
+		return errors.New("Data of wrong type")
 	}
 	return nil
 }
 
-func newSkipchainService(c *onet.Context, path string) onet.Service {
+func newSkipchainService(c *onet.Context) onet.Service {
 	s := &Service{
 		ServiceProcessor: onet.NewServiceProcessor(c),
-		path:             path,
 		SkipBlockMap:     &SkipBlockMap{make(map[string]*SkipBlock)},
 	}
 	if err := s.tryLoad(); err != nil {
 		log.Error(err)
 	}
-	for _, msg := range []interface{}{s.ProposeSkipBlock, s.SetChildrenSkipBlock,
-		s.GetUpdateChain} {
-		if err := s.RegisterHandler(msg); err != nil {
-			log.Fatal("Registration error for msg", msg, err)
-		}
+	if err := s.RegisterHandlers(s.ProposeSkipBlock, s.SetChildrenSkipBlock,
+		s.GetUpdateChain); err != nil {
+		log.Fatal("Registration error:", err)
 	}
 	return s
 }

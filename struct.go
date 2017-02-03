@@ -1,11 +1,10 @@
 package debianupdate
 
 import (
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/skipchain"
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/timestamp"
+	"github.com/dedis/paper_17_usenixsec_chainiac/skipchain"
+	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
 	"github.com/satori/go.uuid"
 	"gopkg.in/dedis/onet.v1"
-	"gopkg.in/dedis/onet.v1/crypto"
 	"gopkg.in/dedis/onet.v1/network"
 )
 
@@ -36,8 +35,8 @@ type ProjectID uuid.UUID
 // Release is a Debian Repository and the developers' signatures
 type Release struct {
 	Repository   *Repository
-	RootID       crypto.HashID
-	Proofs       []crypto.Proof
+	RootID       timestamp.HashID
+	Proofs       []timestamp.Proof
 	ProofsLength []int64
 }
 
@@ -49,7 +48,7 @@ type RepositoryChain struct {
 
 type Timestamp struct {
 	timestamp.SignatureResponse
-	Proofs []crypto.Proof
+	Proofs []timestamp.Proof
 }
 
 type CreateRepository struct {
@@ -139,22 +138,22 @@ type TimestampRequests struct {
 // Returns the Proofs to use to verify the inclusion of the repository given in
 // TimestampRequest
 type TimestampRet struct {
-	Proof crypto.Proof
+	Proof timestamp.Proof
 }
 
 // Similar to TimestampRet but returns the requested proofs designated by
 // repositories names.
 type TimestampRets struct {
-	Proofs map[string]crypto.Proof
+	Proofs map[string]timestamp.Proof
 }
 
 type PackageProof struct {
 	Hash  string
-	Proof crypto.Proof
+	Proof timestamp.Proof
 }
 
 type LatestRelease struct {
-	RootID   crypto.HashID
+	RootID   timestamp.HashID
 	Packages map[string]PackageProof
 	Update   []*skipchain.SkipBlock
 }

@@ -1,0 +1,24 @@
+Simulation = "DebianUpdateOneClient"
+Servers = 4
+Bf = 2
+Rounds = 20
+CloseWait = 6000
+Height = 10
+Base = 4
+RunWait = 3600
+Hosts = 4
+Delay = 50
+Snapshots = "Debian-testing"
+
+NumberOfInstalledPackages, NumberOfPackagesInRepo
+52666, 1
+52666, 10
+52666, 100
+52666, 1000
+52666, 10000
+52666, 52666
+1, 52666
+10, 52666
+100, 52666
+1000, 52666
+10000, 52666

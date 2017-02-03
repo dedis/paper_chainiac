@@ -20,7 +20,9 @@ type HashFunc func() gohash.Hash
 
 // Proof is used for Local Merkle Trees (computed based on messages from clients)
 // One Proof sufficient for one leaf in a Local Merkle Tree
-type Proof []HashID
+type Proof struct {
+	Proof []HashID
+}
 
 // LevelProof is used for the Big Merkle Tree (computed from server commits)
 // A []LevelProof from root to server is sufficient proof
@@ -58,8 +60,8 @@ func (c *hashContext) hashNode(buf []byte, left, right HashID) []byte {
 func (p Proof) Calc(newHash HashFunc, leaf []byte) []byte {
 	c := hashContext{newHash: newHash}
 	var buf []byte
-	for i := len(p) - 1; i >= 0; i-- {
-		leaf = c.hashNode(buf[:0], leaf, p[i])
+	for i := len(p.Proof) - 1; i >= 0; i-- {
+		leaf = c.hashNode(buf[:0], leaf, p.Proof[i])
 		buf = leaf
 	}
 	return leaf
@@ -96,7 +98,7 @@ func CheckLocalProofs(newHash HashFunc, root HashID, leaves []HashID, proofs []P
 // PrintProof prints the proof
 func (p *Proof) PrintProof(proofNumber int) {
 	fmt.Println("Proof number=", proofNumber)
-	for _, x := range *p {
+	for _, x := range p.Proof {
 		fmt.Println(x)
 	}
 	// 	fmt.Println("\n")
@@ -173,7 +175,7 @@ func ProofTree(newHash func() gohash.Hash, leaves []HashID) (HashID, []Proof) {
 				p = append(p, h)
 			}
 		}
-		proofs[i] = Proof(p)
+		proofs[i] = Proof{p}
 	}
 	return root, proofs[:nleavesArg]
 }

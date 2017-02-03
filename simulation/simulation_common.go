@@ -1,7 +1,7 @@
-package debianupdate
+package main
 
 import (
-	"github.com/dedis/cothority/app/lib/config"
+	"gopkg.in/dedis/onet.v1/app"
 	"gopkg.in/dedis/onet.v1/log"
 
 	"os"
@@ -38,7 +38,7 @@ func CopyFiles(dir, snapshots string, releases string) error {
 		strings.Split(releases, " ")...) {
 		dst := path.Join(dir, path.Base(file))
 		if _, err := os.Stat(dst); err != nil {
-			err := config.Copy(dst, "../services/debianupdate/script/"+file)
+			err := app.Copy(dst, "../services/debianupdate/script/"+file)
 			if err != nil {
 				return err
 			}
@@ -56,12 +56,12 @@ func CopyDir(dir, snapshots string) error {
 	}
 	log.Lvl2("We're in", wd)
 
-	releases, err := GetFileFromType(dir+"/../../../services/debianupdate/script/"+snapshots,
+	releases, err := GetFileFromType(dir+"/../../script/"+snapshots,
 		"Release")
 	if err != nil {
 		return err
 	}
-	packages, err := GetFileFromType(dir+"/../../../services/debianupdate/script/"+snapshots,
+	packages, err := GetFileFromType(dir+"/../../script/"+snapshots,
 		"Packages")
 	if err != nil {
 		return err
@@ -75,8 +75,8 @@ func CopyDir(dir, snapshots string) error {
 	for _, file := range append(releases, packages...) {
 		dst := path.Join(dir, snapshots, path.Base(file))
 		if _, err := os.Stat(dst); err != nil {
-			err := config.Copy(dst,
-				dir+"/../../../services/debianupdate/script/"+snapshots+"/"+file)
+			err := app.Copy(dst,
+				dir+"/../../script/"+snapshots+"/"+file)
 			if err != nil {
 				return err
 			}

@@ -1,12 +1,9 @@
 package debianupdate
 
 import (
-	"errors"
-	"reflect"
-
-	"github.com/dedis/paper_17_usenixsec_chainiac_cleanup/skipchain"
+	"github.com/dedis/paper_17_usenixsec_chainiac/skipchain"
+	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
 	"gopkg.in/dedis/onet.v1"
-	"gopkg.in/dedis/onet.v1/crypto"
 	"gopkg.in/dedis/onet.v1/log"
 	"gopkg.in/dedis/onet.v1/network"
 )
@@ -29,15 +26,12 @@ func NewClient(r *onet.Roster) *Client {
 func (c *Client) LatestUpdates(latestIDs []skipchain.SkipBlockID) (*LatestBlocksRet,
 	error) {
 	lbs := &LatestBlocks{latestIDs}
-	p, err := c.Send(c.Root, lbs)
+	lbr := &LatestBlocksRetInternal{}
+	err := c.SendProtobuf(c.Root, lbs, lbr)
 	if err != nil {
 		return nil, err
 	}
 
-	lbr, ok := p.Msg.(LatestBlocksRetInternal)
-	if !ok {
-		return nil, errors.New("Wrong Message" + reflect.TypeOf(p.Msg).String())
-	}
 	var updates [][]*skipchain.SkipBlock
 	for _, l := range lbr.Lengths {
 		updates = append(updates, lbr.Updates[0:l])
@@ -48,29 +42,22 @@ func (c *Client) LatestUpdates(latestIDs []skipchain.SkipBlockID) (*LatestBlocks
 
 func (c *Client) LatestUpdatesForRepo(repoName string) (*LatestBlockRet, error) {
 	lbs := &LatestBlockRepo{repoName}
-	p, err := c.Send(c.Root, lbs)
+	lbr := &LatestBlockRet{}
+	err := c.SendProtobuf(c.Root, lbs, lbr)
 	if err != nil {
 		return nil, err
 	}
-
-	lbr, ok := p.Msg.(LatestBlockRet)
-	if !ok {
-		return nil, errors.New("Wrong Message " + reflect.TypeOf(p.Msg).String())
-	}
-	return &lbr, nil
+	return lbr, nil
 }
 
 func (c *Client) TimestampRequests(names []string) (*TimestampRets, error) {
 	t := &TimestampRequests{names}
-	r, err := c.Send(c.Root, t)
+	tr := &TimestampRets{}
+	err := c.SendProtobuf(c.Root, t, tr)
 	if err != nil {
 		return nil, err
 	}
-	tr, ok := r.Msg.(TimestampRets)
-	if !ok {
-		return nil, errors.New("Wrong Message")
-	}
-	return &tr, nil
+	return tr, nil
 }
 
 func (c *Client) LatestRelease(repo string) (*LatestRelease, error) {
@@ -99,9 +86,9 @@ func (c *Client) LatestRelease(repo string) (*LatestRelease, error) {
 
 	log.Lvl2("preparing the datas")
 	for i, p := range packages {
-		flatproof := crypto.Proof{}
+		flatproof := timestamp.Proof{}
 		for _, subproof := range proofs[:lengths[i]] {
-			flatproof = append(flatproof, subproof...)
+			flatproof.Proof = append(flatproof.Proof, subproof.Proof...)
 		}
 		packageProofHash[p.Name] = PackageProof{p.Hash, flatproof}
 		proofs = proofs[lengths[i]:]
@@ -109,4 +96,12 @@ func (c *Client) LatestRelease(repo string) (*LatestRelease, error) {
 
 	// We need to return the root signed
 	return &LatestRelease{release.RootID, packageProofHash, lbr.Update}, nil
+}
+
+func (c *Client) Rx() uint64 {
+	return 0
+}
+
+func (c *Client) Tx() uint64 {
+	return 0
 }
