@@ -2,7 +2,6 @@ package debianupdate
 
 import (
 	"github.com/dedis/paper_17_usenixsec_chainiac/skipchain"
-	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/log"
 	"gopkg.in/dedis/onet.v1/network"
@@ -79,19 +78,14 @@ func (c *Client) LatestRelease(repo string) (*LatestRelease, error) {
 	release := r.(*Release)
 
 	proofs := release.Proofs
-	lengths := release.ProofsLength
 	packages := release.Repository.Packages
 
 	packageProofHash := map[string]PackageProof{}
 
 	log.Lvl2("preparing the datas")
+
 	for i, p := range packages {
-		flatproof := timestamp.Proof{}
-		for _, subproof := range proofs[:lengths[i]] {
-			flatproof.Proof = append(flatproof.Proof, subproof.Proof...)
-		}
-		packageProofHash[p.Name] = PackageProof{p.Hash, flatproof}
-		proofs = proofs[lengths[i]:]
+		packageProofHash[p.Name] = PackageProof{p.Hash, proofs[i]}
 	}
 
 	// We need to return the root signed

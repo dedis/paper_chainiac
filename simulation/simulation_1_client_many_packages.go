@@ -118,12 +118,8 @@ func (e *oneClientSimulation) Run(config *onet.SimulationConfig) error {
 
 		// Compute the root and the proofs
 		root, proofs := timestamp.ProofTree(debianupdate.HashFunc(), hashes)
-		lengths := []int64{}
-		for _, proof := range proofs {
-			lengths = append(lengths, int64(len(proof.Proof)))
-		}
 		// Store the repo, root and proofs in a release
-		release := &debianupdate.Release{repo, root, proofs, lengths}
+		release := &debianupdate.Release{repo, root, proofs}
 
 		// check if the skipchain has already been created for this repo
 		sc, knownRepo := repos[repo.GetName()]

@@ -34,10 +34,9 @@ type ProjectID uuid.UUID
 
 // Release is a Debian Repository and the developers' signatures
 type Release struct {
-	Repository   *Repository
-	RootID       timestamp.HashID
-	Proofs       []timestamp.Proof
-	ProofsLength []int64
+	Repository *Repository
+	RootID     timestamp.HashID
+	Proofs     []timestamp.Proof
 }
 
 type RepositoryChain struct {
