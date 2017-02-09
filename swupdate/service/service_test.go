@@ -14,9 +14,9 @@ import (
 
 	"github.com/dedis/cothority/protocols/swupdate"
 	"github.com/dedis/cothority/services/skipchain"
-	"github.com/dedis/crypto/abstract"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/dedis/crypto.v0/abstract"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/crypto"
 	"gopkg.in/dedis/onet.v1/log"

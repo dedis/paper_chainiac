@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/dedis/cothority/protocols/swupdate"
-	"github.com/dedis/crypto/abstract"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/ed25519"
+	"gopkg.in/dedis/crypto.v0/abstract"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/crypto"
 	"gopkg.in/dedis/onet.v1/log"

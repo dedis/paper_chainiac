@@ -7,10 +7,10 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"github.com/dedis/crypto/abstract"
 	"github.com/dedis/paper_17_usenixsec_chainiac/skipchain"
 	"github.com/dedis/paper_17_usenixsec_chainiac/swupdate/protocol"
 	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
+	"gopkg.in/dedis/crypto.v0/abstract"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/log"
 	"gopkg.in/dedis/onet.v1/network"
