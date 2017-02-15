@@ -91,11 +91,3 @@ func (c *Client) LatestRelease(repo string) (*LatestRelease, error) {
 	// We need to return the root signed
 	return &LatestRelease{release.RootID, packageProofHash, lbr.Update}, nil
 }
-
-func (c *Client) Rx() uint64 {
-	return 0
-}
-
-func (c *Client) Tx() uint64 {
-	return 0
-}

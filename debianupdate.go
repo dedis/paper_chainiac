@@ -119,7 +119,7 @@ func (service *DebianUpdate) CreateRepository(cr *CreateRepository) (network.Mes
 func (service *DebianUpdate) startPropagate(repo string,
 	repoChain *RepositoryChain) error {
 	roster := service.Storage.Root.Roster
-	log.Lvl2("Propagating repository", repo, "to", roster.List)
+	log.Lvl2("Propagating repository", repo, repoChain, "to", roster.List)
 	replies, err := manage.PropagateStartAndWait(service.Context, roster,
 		repoChain, 120000, service.PropagateSkipBlock)
 	if err != nil {
@@ -367,14 +367,15 @@ func verifierFunc(msg, data []byte) bool {
 
 	//ver := monitor.NewTimeMeasure("verification")
 
+	// measure the time the cothority takes to verify the merkle tree
+	// IC: moved measure before creation of hashes
+	measure := monitor.NewTimeMeasure("cothority_verify_proofs")
+
 	// build the merkle-tree for packages
 	hashes := make([]timestamp.HashID, len(repo.Packages))
 	for i, p := range repo.Packages {
 		hashes[i] = timestamp.HashID(p.Hash)
 	}
-
-	// measure the time the cothority takes to verify the merkle tree
-	measure := monitor.NewTimeMeasure("cothority_verify_proofs")
 
 	possibleRoot, _ := timestamp.ProofTree(HashFunc(), hashes)
 

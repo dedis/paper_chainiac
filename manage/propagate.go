@@ -14,6 +14,7 @@ import (
 
 func init() {
 	onet.GlobalProtocolRegister("Propagate", NewPropagateProtocol)
+	network.RegisterMessage(PropagateSendData{})
 }
 
 // Propagate is a protocol that sends some data to all attached nodes
@@ -91,7 +92,7 @@ func propagateStartAndWait(pi onet.ProtocolInstance, msg network.Message, msec i
 // NewPropagateProtocol returns a new Propagate protocol
 func NewPropagateProtocol(n *onet.TreeNodeInstance) (onet.ProtocolInstance, error) {
 	p := &Propagate{
-		sd:               &PropagateSendData{[]byte{}, 1000},
+		sd:               &PropagateSendData{[]byte{}, 120000},
 		TreeNodeInstance: n,
 		received:         0,
 		subtree:          n.TreeNode().SubtreeCount(),
@@ -123,12 +124,6 @@ func (p *Propagate) Dispatch() error {
 		case msg := <-p.ChannelSD:
 			log.Lvl3(p.ServerIdentity(), "Got data from", msg.ServerIdentity, "and setting timeout to", msg.Msec)
 			p.sd.Msec = msg.Msec
-			if p.onData != nil {
-				_, netMsg, err := network.Unmarshal(msg.Data)
-				if err == nil {
-					p.onData(netMsg)
-				}
-			}
 			if !p.IsRoot() {
 				log.Lvl3(p.ServerIdentity(), "Sending to parent")
 				p.SendToParent(&PropagateReply{})
@@ -138,6 +133,12 @@ func (p *Propagate) Dispatch() error {
 			} else {
 				log.Lvl3(p.ServerIdentity(), "Sending to children")
 				p.SendToChildren(&msg.PropagateSendData)
+			}
+			if p.onData != nil {
+				_, netMsg, err := network.Unmarshal(msg.Data)
+				if err == nil {
+					p.onData(netMsg)
+				}
 			}
 		case <-p.ChannelReply:
 			p.received++
@@ -150,7 +151,7 @@ func (p *Propagate) Dispatch() error {
 			}
 		case <-time.After(timeout):
 			_, a, err := network.Unmarshal(p.sd.Data)
-			log.Fatalf("Timeout of %s reached. %v %s", timeout, a, err)
+			log.Fatal("Timeout of %s reached. %v %s", timeout, a, err)
 			process = false
 		}
 	}

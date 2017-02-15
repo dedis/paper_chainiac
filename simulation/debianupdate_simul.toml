@@ -8,6 +8,11 @@ Base = 4
 RunWait = 3600
 Hosts = 4
 Delay = 50
+Snapshots = "Debian-jessie-updates"
 
-Snapshots
-"stable-update"
+NumberOfPackagesInRepo
+1
+10
+100
+1000
+10000

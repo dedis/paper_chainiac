@@ -99,7 +99,7 @@ type LatestBlockRepo struct {
 }
 
 // Returns the timestamp of the latest skipblock, together with an eventual
-// shortes-link of skipblocks needed to go from the LastKnownSB to the
+// shortest-link of skipblocks needed to go from the LastKnownSB to the
 // current skipblock.
 type LatestBlockRet struct {
 	Timestamp *Timestamp

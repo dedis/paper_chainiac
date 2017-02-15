@@ -47,11 +47,3 @@ func (c *Client) TimestampRequests(names []string) (*TimestampRets, error) {
 	}
 	return tr, nil
 }
-
-// Hack for paper
-func (c *Client) Rx() uint64 {
-	return 0
-}
-func (c *Client) Tx() uint64 {
-	return 0
-}

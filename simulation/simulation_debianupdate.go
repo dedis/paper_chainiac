@@ -5,6 +5,8 @@ import (
 	"sort"
 	"time"
 
+	"path/filepath"
+
 	"github.com/BurntSushi/toml"
 	"github.com/dedis/paper_17_usenixsec_chainiac"
 	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
@@ -90,6 +92,7 @@ func (e *createSimulation) Run(config *onet.SimulationConfig) error {
 	if err != nil {
 		return nil
 	}
+	release_list := filepath.Join(current_dir, "popular_debian.csv")
 
 	sort.Sort(snapshot_files)
 	sort.Sort(release_files)
@@ -104,7 +107,8 @@ func (e *createSimulation) Run(config *onet.SimulationConfig) error {
 		log.Lvl1("Parsing repo file", release_file)
 
 		// Create a new repository structure (not a new skipchain..!)
-		repo, err := debianupdate.NewRepository(release_file, snapshot_files[i],
+		repo, err := debianupdate.NewRepositoryPopularity(release_file, snapshot_files[i],
+			release_list,
 			"https://snapshots.debian.org", e.Snapshots, e.NumberOfPackagesInRepo)
 		log.ErrFatal(err)
 		log.Lvl1("Repository created with", len(repo.Packages), "packages")

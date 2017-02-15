@@ -344,7 +344,8 @@ func (bft *ProtocolBFTCoSi) handleChallengePrepare(msg challengePrepareChan) err
 	if bft.IsLeaf() {
 		return bft.startResponse(RoundPrepare)
 	}
-	return bft.SendToChildrenInParallel(&ch)
+	err := bft.SendToChildrenInParallel(&ch)
+	return err
 }
 
 // handleChallengeCommit verifies the signature and checks if not more than

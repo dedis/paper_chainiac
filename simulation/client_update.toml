@@ -8,7 +8,7 @@ Base = 4
 RunWait = 3600
 Hosts = 4
 Delay = 50
-Snapshots = "Debian-jessie-updates"
+Snapshots = "Debian-testing"
 
 NumberOfInstalledPackages, NumberOfPackagesInRepo
 1, 1
@@ -16,9 +16,4 @@ NumberOfInstalledPackages, NumberOfPackagesInRepo
 100, 100
 1000, 1000
 10000, 10000
-100000, 100000
-1, 100000
-10, 100000
-100, 100000
-1000, 100000
-10000, 100000
+52000, 52000

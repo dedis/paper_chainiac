@@ -56,12 +56,12 @@ func CopyDir(dir, snapshots string) error {
 	}
 	log.Lvl2("We're in", wd)
 
-	releases, err := GetFileFromType(dir+"/../../script/"+snapshots,
+	releases, err := GetFileFromType(dir+"/../../repositories/"+snapshots,
 		"Release")
 	if err != nil {
 		return err
 	}
-	packages, err := GetFileFromType(dir+"/../../script/"+snapshots,
+	packages, err := GetFileFromType(dir+"/../../repositories/"+snapshots,
 		"Packages")
 	if err != nil {
 		return err
@@ -76,12 +76,13 @@ func CopyDir(dir, snapshots string) error {
 		dst := path.Join(dir, snapshots, path.Base(file))
 		if _, err := os.Stat(dst); err != nil {
 			err := app.Copy(dst,
-				dir+"/../../script/"+snapshots+"/"+file)
+				dir+"/../../repositories/"+snapshots+"/"+file)
 			if err != nil {
 				return err
 			}
 		}
 	}
+	app.Copy(dir, dir+"/../../repositories/popular_debian.csv")
 	return nil
 }
 

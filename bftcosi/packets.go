@@ -6,7 +6,20 @@ import (
 
 	"gopkg.in/dedis/crypto.v0/abstract"
 	"gopkg.in/dedis/onet.v1"
+	"gopkg.in/dedis/onet.v1/network"
 )
+
+func init() {
+	for _, i := range []interface{}{
+		Announce{}, Commitment{},
+		ChallengePrepare{},
+		ChallengeCommit{},
+		Response{},
+		Exception{},
+	} {
+		network.RegisterMessage(i)
+	}
+}
 
 // RoundType is a type to know if we are in the "prepare" round or the "commit"
 // round

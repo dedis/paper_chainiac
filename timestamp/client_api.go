@@ -54,11 +54,3 @@ func (c *Client) SetupStamper(roster *onet.Roster, epochDuration time.Duration,
 	log.Lvl4("Initialized timestamp with roster id:", sr.ID)
 	return sr, nil
 }
-
-// Hack for paper
-func (c *Client) Rx() uint64 {
-	return 0
-}
-func (c *Client) Tx() uint64 {
-	return 0
-}

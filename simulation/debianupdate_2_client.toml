@@ -11,12 +11,6 @@ Delay = 50
 Snapshots = "Debian-jessie-updates"
 
 NumberOfInstalledPackages, NumberOfPackagesInRepo
-1, 1
-10, 10
-100, 100
-1000, 1000
-10000, 10000
-100000, 100000
 1, 100000
 10, 100000
 100, 100000

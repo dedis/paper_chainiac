@@ -3,7 +3,12 @@ package swupdate
 import (
 	"gopkg.in/dedis/crypto.v0/abstract"
 	"gopkg.in/dedis/onet.v1"
+	"gopkg.in/dedis/onet.v1/network"
 )
+
+func init() {
+	network.RegisterMessage(Announcement{})
+}
 
 // The main messages used by CoSi
 
