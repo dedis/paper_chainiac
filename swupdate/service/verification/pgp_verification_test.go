@@ -3,7 +3,7 @@ package swupdate
 import (
 	"testing"
 
-	"github.com/dedis/cothority/services/swupdate/verification/parsers"
+	"github.com/dedis/paper_chainiac/swupdate/service/verification/parsers"
 	"gopkg.in/dedis/onet.v1/log"
 )
 

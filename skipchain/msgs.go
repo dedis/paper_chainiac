@@ -3,7 +3,7 @@ package skipchain
 import (
 	"sync"
 
-	"github.com/dedis/paper_17_usenixsec_chainiac/bftcosi"
+	"github.com/dedis/paper_chainiac/bftcosi"
 	"github.com/satori/go.uuid"
 	"gopkg.in/dedis/onet.v1/network"
 )

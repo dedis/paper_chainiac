@@ -19,10 +19,10 @@ import (
 
 	"strconv"
 
-	"github.com/dedis/paper_17_usenixsec_chainiac/manage"
-	"github.com/dedis/paper_17_usenixsec_chainiac/skipchain"
-	"github.com/dedis/paper_17_usenixsec_chainiac/swupdate/protocol"
-	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
+	"github.com/dedis/paper_chainiac/manage"
+	"github.com/dedis/paper_chainiac/skipchain"
+	"github.com/dedis/paper_chainiac/swupdate/protocol"
+	"github.com/dedis/paper_chainiac/timestamp"
 	"github.com/satori/go.uuid"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/log"

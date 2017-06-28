@@ -7,7 +7,7 @@ import (
 
 	"errors"
 
-	"github.com/dedis/paper_17_usenixsec_chainiac/bftcosi"
+	"github.com/dedis/paper_chainiac/bftcosi"
 	"gopkg.in/dedis/crypto.v0/abstract"
 	"gopkg.in/dedis/crypto.v0/cosi"
 	"gopkg.in/dedis/onet.v1"

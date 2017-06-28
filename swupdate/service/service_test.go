@@ -12,8 +12,8 @@ import (
 	"runtime/pprof"
 	"time"
 
-	"github.com/dedis/cothority/protocols/swupdate"
-	"github.com/dedis/cothority/services/skipchain"
+	"github.com/dedis/paper_chainiac/skipchain"
+	"github.com/dedis/paper_chainiac/swupdate/protocol"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dedis/crypto.v0/abstract"

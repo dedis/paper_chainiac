@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dedis/cothority/protocols/swupdate"
+	"github.com/dedis/paper_chainiac/swupdate/protocol"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/crypto/ed25519"
 	"gopkg.in/dedis/crypto.v0/abstract"

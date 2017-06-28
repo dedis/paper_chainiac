@@ -2,8 +2,8 @@ package swupdate
 
 import (
 	"github.com/BurntSushi/toml"
-	"github.com/dedis/paper_17_usenixsec_chainiac/skipchain"
-	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
+	"github.com/dedis/paper_chainiac/skipchain"
+	"github.com/dedis/paper_chainiac/timestamp"
 	"github.com/satori/go.uuid"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/network"

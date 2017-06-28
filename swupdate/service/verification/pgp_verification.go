@@ -13,7 +13,7 @@ import (
 
 	"gopkg.in/dedis/onet.v1/log"
 
-	"github.com/dedis/paper_17_usenixsec_chainiac/swupdate/service/verification/parsers"
+	"github.com/dedis/paper_chainiac/swupdate/service/verification/parsers"
 	"golang.org/x/crypto/openpgp"
 )
 

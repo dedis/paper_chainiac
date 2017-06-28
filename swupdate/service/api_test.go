@@ -3,7 +3,7 @@ package swupdate
 import (
 	"testing"
 
-	"github.com/dedis/cothority/services/skipchain"
+	"github.com/dedis/paper_chainiac/skipchain"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/log"

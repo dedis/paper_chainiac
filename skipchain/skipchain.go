@@ -12,8 +12,8 @@ import (
 
 	"time"
 
-	"github.com/dedis/paper_17_usenixsec_chainiac/bftcosi"
-	"github.com/dedis/paper_17_usenixsec_chainiac/manage"
+	"github.com/dedis/paper_chainiac/bftcosi"
+	"github.com/dedis/paper_chainiac/manage"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/log"
 	"gopkg.in/dedis/onet.v1/network"

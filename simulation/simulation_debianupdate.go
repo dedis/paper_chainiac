@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/BurntSushi/toml"
-	"github.com/dedis/paper_17_usenixsec_chainiac"
-	"github.com/dedis/paper_17_usenixsec_chainiac/timestamp"
+	"github.com/dedis/paper_chainiac"
+	"github.com/dedis/paper_chainiac/timestamp"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/log"
 	"gopkg.in/dedis/onet.v1/simul/monitor"

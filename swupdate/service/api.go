@@ -1,7 +1,7 @@
 package swupdate
 
 import (
-	"github.com/dedis/paper_17_usenixsec_chainiac/skipchain"
+	"github.com/dedis/paper_chainiac/skipchain"
 	"gopkg.in/dedis/onet.v1"
 	"gopkg.in/dedis/onet.v1/network"
 )
