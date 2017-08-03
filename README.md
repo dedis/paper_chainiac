@@ -31,8 +31,8 @@ You need to install
 
 ## Retrieving test data
 
-First, run `./get_files.sh` to retrieve the list of the most downloaded Debian packages from `http://popcon.debian.org/`.
-Then run
+Go to repositories/ and run `./get_files.sh` to retrieve the list of the most downloaded Debian packages 
+from `http://popcon.debian.org/`. Then run
 ```
 python3 get_repo_3.5.py
 ``` 
