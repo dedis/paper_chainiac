@@ -4,7 +4,7 @@ Chainiac is an update framework that provides decentralized enforcement of devel
 independent verification of source-to-binary correspondence, transparency via a collectively-signed update timeline, 
 and efficient release validation by arbitrarily out-of-date clients.
 This repository contains the bare-bone source code of the system and the code necessary to reproduce the experiments
-in the [corresponding paper](https://eprint.iacr.org/2017/648).
+in the [corresponding paper](https://www.usenix.org/system/files/conference/usenixsecurity17/sec17-nikitin.pdf).
 
 ## Installation
 
@@ -51,9 +51,7 @@ go build .
 
 This will build a *simulation* binary. You can reproduce the experiments from the paper by running
 the binary with a toml configuraiton file as an argument. 
-The correspondance of the experiments and toml files is listed below:
+<The correspondance of the experiments and toml files is listed below:
 
 - 
-- 
-
-## Reproducible builds
+- >
