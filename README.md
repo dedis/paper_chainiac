@@ -51,7 +51,7 @@ go build .
 
 This will build a *simulation* binary. You can reproduce the experiments from the paper by running
 the binary with a toml configuraiton file as an argument. 
-<The correspondance of the experiments and toml files is listed below:
+<!-- The correspondance of the experiments and toml files is listed below:
 
 - 
-- >
+- -->
